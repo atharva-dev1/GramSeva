@@ -1,12 +1,12 @@
 // ── Component: SchemeCard ──
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, FileText, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Users, Building2, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, FileText, ArrowRight, ChevronDown, ChevronUp, Users, Building2, Calendar, Bookmark, BookmarkCheck } from 'lucide-react';
 import { Badge } from './Badge';
 import { ApplyModal } from './ApplyModal';
 import { useLanguage } from '../../hooks/useLanguage';
 
-export function SchemeCard({ scheme, index = 0, onToast }) {
+export function SchemeCard({ scheme, index = 0, onToast, isSaved = false, onToggleSave }) {
   const { t, currentLang } = useLanguage();
   const isHindi = currentLang === 'hi';
   const [expanded, setExpanded] = useState(false);
@@ -17,6 +17,16 @@ export function SchemeCard({ scheme, index = 0, onToast }) {
     setApplied(true);
     onToast?.({ type: 'success', title: 'Application Submitted!', message: msg });
     setTimeout(() => setApplied(false), 8000);
+  };
+
+  const handleToggleSave = (e) => {
+    e.stopPropagation();
+    onToggleSave?.();
+    onToast?.({
+      type: isSaved ? 'info' : 'success',
+      title: isSaved ? 'Removed from saved' : 'Scheme Saved! 🔖',
+      message: isSaved ? `${scheme.name} removed from bookmarks` : `${scheme.name} added to your saved list`,
+    });
   };
 
   return (
@@ -58,7 +68,7 @@ export function SchemeCard({ scheme, index = 0, onToast }) {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.3 }}>
                     {isHindi ? scheme.hindi : scheme.name}
                   </div>
@@ -66,11 +76,18 @@ export function SchemeCard({ scheme, index = 0, onToast }) {
                     {isHindi ? scheme.name : scheme.hindi}
                   </div>
                 </div>
-                <Badge variant={scheme.eligible ? 'green' : 'red'}>
-                  {scheme.eligible
-                    ? <><CheckCircle size={10} /> {t('eligible')}</>
-                    : <><XCircle size={10} /> {t('notEligible')}</>}
-                </Badge>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <Badge variant={scheme.eligible ? 'green' : 'red'}>
+                    {scheme.eligible
+                      ? <><CheckCircle size={10} /> {t('eligible')}</>
+                      : <><XCircle size={10} /> {t('notEligible')}</>}
+                  </Badge>
+                  {onToggleSave && (
+                    <motion.button whileTap={{ scale: 0.85 }} onClick={handleToggleSave} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', color: isSaved ? 'var(--accent-secondary)' : 'var(--text-muted)', transition: 'color 0.2s ease' }}>
+                      {isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                    </motion.button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

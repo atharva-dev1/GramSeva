@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
+import { SparkLine } from './SparkLine';
 
 function calcPercent(price, prev) {
   if (!prev || prev === 0) return 0;
@@ -115,34 +116,38 @@ export function PriceRow({ item, index }) {
             transition={{ duration: 0.25, ease: 'easeInOut' }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{
-              borderTop: '1px solid var(--border)',
-              padding: '12px 16px',
-              display: 'flex',
-              gap: 16,
-              flexWrap: 'wrap',
-            }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>{t('yesterday')}</div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)' }}>
-                  ₹{item.prevPrice.toLocaleString('en-IN')}
+            <div style={{ borderTop: '1px solid var(--border)', padding: '12px 16px' }}>
+              {/* Sparkline chart */}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  7-Day Price Trend
                 </div>
+                <SparkLine item={item} width={280} height={40} />
               </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>{t('weekHigh')}</div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--accent-green)' }}>
-                  ₹{item.weekHigh.toLocaleString('en-IN')}
+              {/* Stats row */}
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>{t('yesterday')}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    ₹{item.prevPrice.toLocaleString('en-IN')}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>Week Low</div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--accent-red)' }}>
-                  ₹{item.weekLow.toLocaleString('en-IN')}
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>{t('weekHigh')}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--accent-green)' }}>
+                    ₹{item.weekHigh.toLocaleString('en-IN')}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>District</div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{item.district}</div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>Week Low</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--accent-red)' }}>
+                    ₹{item.weekLow.toLocaleString('en-IN')}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>District</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{item.district}</div>
+                </div>
               </div>
             </div>
           </motion.div>

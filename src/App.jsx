@@ -10,12 +10,14 @@ import { HomePage } from './pages/HomePage';
 import { MandiPage } from './pages/MandiPage';
 import { SchemesPage } from './pages/SchemesPage';
 import { HealthPage } from './pages/HealthPage';
+import { RightsPage } from './pages/RightsPage';
 
 const PATH_TO_TAB = {
   '/': 'home',
   '/mandi': 'mandi',
   '/schemes': 'schemes',
   '/health': 'health',
+  '/rights': 'rights',
 };
 
 function AppContent({ splashDone }) {
@@ -37,7 +39,7 @@ function AppContent({ splashDone }) {
   }, []);
 
   const handleTabChange = (tab) => {
-    const paths = { home: '/', mandi: '/mandi', schemes: '/schemes', health: '/health' };
+    const paths = { home: '/', mandi: '/mandi', schemes: '/schemes', health: '/health', rights: '/rights' };
     navigate(paths[tab] ?? '/');
   };
 
@@ -53,6 +55,7 @@ function AppContent({ splashDone }) {
           <Route path="/mandi"   element={<MandiPage   onToast={showToast} />} />
           <Route path="/schemes" element={<SchemesPage onToast={showToast} />} />
           <Route path="/health"  element={<HealthPage  onToast={showToast} />} />
+          <Route path="/rights"  element={<RightsPage  onToast={showToast} />} />
           <Route path="*"        element={<HomePage    onToast={showToast} />} />
         </Routes>
       </AnimatePresence>

@@ -1,6 +1,6 @@
 // ── Component: BottomNav ──
 import { motion } from 'framer-motion';
-import { Home, ShoppingCart, Star, Heart } from 'lucide-react';
+import { Home, ShoppingCart, Star, Heart, Scale } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 
@@ -9,9 +9,16 @@ const TABS = [
   { id: 'mandi',   path: '/mandi',   icon: ShoppingCart, labelKey: 'mandi',   emoji: '📈' },
   { id: 'schemes', path: '/schemes', icon: Star,         labelKey: 'schemes', emoji: '📋' },
   { id: 'health',  path: '/health',  icon: Heart,        labelKey: 'health',  emoji: '🏥' },
+  { id: 'rights',  path: '/rights',  icon: Scale,        labelKey: 'rights',  emoji: '⚖️' },
 ];
 
-const PATH_TO_TAB = { '/': 'home', '/mandi': 'mandi', '/schemes': 'schemes', '/health': 'health' };
+const PATH_TO_TAB = {
+  '/': 'home',
+  '/mandi': 'mandi',
+  '/schemes': 'schemes',
+  '/health': 'health',
+  '/rights': 'rights',
+};
 
 export function BottomNav({ activeTab, onTabChange }) {
   const { t } = useLanguage();
@@ -27,7 +34,7 @@ export function BottomNav({ activeTab, onTabChange }) {
 
   return (
     <nav className="bottom-nav">
-      <div style={{ display: 'flex', alignItems: 'stretch', height: 60, padding: '0 8px' }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', height: 60, padding: '0 4px' }}>
         {TABS.map((tab) => {
           const isActive = currentTab === tab.id;
           return (
@@ -38,24 +45,24 @@ export function BottomNav({ activeTab, onTabChange }) {
               style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                 justifyContent: 'center', gap: 3, border: 'none', background: 'transparent',
-                cursor: 'pointer', padding: '6px 4px', position: 'relative',
+                cursor: 'pointer', padding: '6px 2px', position: 'relative',
               }}
             >
               {/* Active top indicator */}
               {isActive && (
                 <motion.div
                   layoutId="nav-indicator"
-                  style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:32, height:2, background:'var(--accent-primary)', borderRadius:'0 0 4px 4px' }}
+                  style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:28, height:2, background:'var(--accent-primary)', borderRadius:'0 0 4px 4px' }}
                   transition={{ type:'spring', stiffness:400, damping:30 }}
                 />
               )}
 
               <motion.div animate={{ color: isActive ? 'var(--accent-primary)' : '#444444', scale: isActive ? 1.1 : 1 }} transition={{ duration: 0.15 }}>
-                <tab.icon size={20} color={isActive ? 'var(--accent-primary)' : '#444444'} />
+                <tab.icon size={18} color={isActive ? 'var(--accent-primary)' : '#444444'} />
               </motion.div>
 
-              <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400, color: isActive ? 'var(--accent-primary)' : 'var(--text-muted)', transition: 'color 0.2s ease', lineHeight: 1 }}>
-                {t(tab.labelKey)}
+              <span style={{ fontSize: 9, fontWeight: isActive ? 600 : 400, color: isActive ? 'var(--accent-primary)' : 'var(--text-muted)', transition: 'color 0.2s ease', lineHeight: 1 }}>
+                {tab.id === 'rights' ? (t('home') === 'Home' ? 'Rights' : 'अधिकार') : t(tab.labelKey)}
               </span>
 
               {isActive && (

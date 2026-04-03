@@ -1,10 +1,11 @@
 // ── Page: HomePage ──
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MicButton } from '../components/ui/MicButton';
 import { ServiceCard } from '../components/ui/ServiceCard';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
+import { WeatherWidget } from '../components/ui/WeatherWidget';
 import { useSpeech } from '../hooks/useSpeech';
 import { useLanguage } from '../hooks/useLanguage';
 
@@ -18,11 +19,53 @@ const STATS = [
 
 const LANG_CHIPS = ['Hindi 🇮🇳', 'English', 'Bhojpuri', 'Marathi', 'Tamil'];
 
+// News headlines (in production, fetch from an API)
+const AGRI_NEWS = [
+  { en: 'MSP for Kharif crops hiked by ₹200/qtl for 2025-26 season 📈', hi: 'खरीफ 2025-26 के लिए MSP में ₹200/क्विंटल की बढ़ोतरी 📈' },
+  { en: 'PM KISAN 17th installment to be released this month 💰', hi: 'पीएम किसान की 17वीं किस्त इस महीने जारी होगी 💰' },
+  { en: 'Rabi crop acreage up 8% compared to last year 🌾', hi: 'रबी फसल का क्षेत्रफल पिछले साल से 8% अधिक 🌾' },
+  { en: 'Soil Health Card data now available on DigiLocker 📱', hi: 'मृदा स्वास्थ्य कार्ड की जानकारी DigiLocker पर उपलब्ध 📱' },
+  { en: 'NABARD releases ₹2.6L crore credit target for agriculture 🏦', hi: 'NABARD ने कृषि के लिए ₹2.6 लाख करोड़ ऋण लक्ष्य जारी किया 🏦' },
+];
+
 function getTimeGreeting(t) {
   const h = new Date().getHours();
   if (h < 12) return t('greetingMorning');
   if (h < 17) return t('greetingAfternoon');
   return t('greetingEvening');
+}
+
+// Scrolling news ticker
+function NewsTicker({ isHindi }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => setIdx(p => (p + 1) % AGRI_NEWS.length), 4000);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8,
+      background: 'rgba(255,107,53,0.06)', border: '1px solid rgba(255,107,53,0.15)',
+      borderRadius: 10, padding: '8px 12px', marginBottom: 20, overflow: 'hidden',
+    }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-primary)', whiteSpace: 'nowrap', background: 'rgba(255,107,53,0.15)', padding: '2px 8px', borderRadius: 6 }}>
+        📰 NEWS
+      </span>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={idx}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.3 }}
+          style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}
+        >
+          {isHindi ? AGRI_NEWS[idx].hi : AGRI_NEWS[idx].en}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export function HomePage({ onToast }) {
@@ -35,16 +78,24 @@ export function HomePage({ onToast }) {
   });
   const [showResult, setShowResult] = useState(false);
 
+  // BUG FIX: use stable callback refs instead of capturing navigate/resetSpeech in effect deps
+  const handleSpeechDone = useCallback(() => {
+    if (!transcript) return;
+    onToast?.({ type: 'info', title: 'Voice Recognized!', message: `Finding schemes for: "${transcript}"` });
+    setTimeout(() => {
+      navigate('/schemes');
+      setShowResult(false);
+      resetSpeech();
+    }, 600);
+  }, [transcript, onToast, navigate, resetSpeech]);
+
   useEffect(() => {
     if (speechState === 'done' && transcript) {
       setShowResult(true);
-      const timer = setTimeout(() => {
-        onToast?.({ type: 'info', title: 'Voice Recognized!', message: `Finding schemes for: "${transcript}"` });
-        setTimeout(() => { navigate('/schemes'); setShowResult(false); resetSpeech(); }, 600);
-      }, 1800);
+      const timer = setTimeout(handleSpeechDone, 1800);
       return () => clearTimeout(timer);
     }
-  }, [speechState, transcript]);
+  }, [speechState, transcript, handleSpeechDone]);
 
   const handleMicPress = () => {
     if (speechState === 'idle' || speechState === 'done' || speechState === 'error') {
@@ -59,14 +110,10 @@ export function HomePage({ onToast }) {
     { emoji:'🌾', title:t('mySchemes'),   subtitle:t('schemesSubtitle'), gradient:'linear-gradient(135deg,rgba(255,107,53,.6),rgba(255,107,53,.3))', path:'/schemes' },
     { emoji:'📈', title:t('mandiPrices'), subtitle:t('mandiSubtitle'),   gradient:'linear-gradient(135deg,rgba(255,215,0,.5),rgba(255,150,0,.3))',   path:'/mandi' },
     { emoji:'🏥', title:t('healthHelp'),  subtitle:t('healthSubtitle'),  gradient:'linear-gradient(135deg,rgba(0,212,106,.5),rgba(0,150,70,.3))',     path:'/health' },
-    { emoji:'⚖️', title:t('knowRights'), subtitle:t('rightsSubtitle'),  gradient:'linear-gradient(135deg,rgba(130,100,255,.5),rgba(80,60,200,.3))',  path:'rights' },
+    { emoji:'⚖️', title:t('knowRights'), subtitle:t('rightsSubtitle'),  gradient:'linear-gradient(135deg,rgba(130,100,255,.5),rgba(80,60,200,.3))',  path:'/rights' },
   ];
 
   const handleServiceClick = (path) => {
-    if (path === 'rights') {
-      onToast?.({ type: 'info', title: 'Coming Soon!', message: 'Legal guidance launching next update 🚀' });
-      return;
-    }
     navigate(path);
   };
 
@@ -104,7 +151,7 @@ export function HomePage({ onToast }) {
         {/* ── Greeting Card ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
-          className="glass-card" style={{ padding: '20px', marginBottom: 24 }}
+          className="glass-card" style={{ padding: '20px', marginBottom: 16 }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -119,7 +166,11 @@ export function HomePage({ onToast }) {
             <div style={{ fontSize: 52, lineHeight: 1, filter: 'drop-shadow(0 0 12px rgba(255,107,53,0.3))' }}>🌾</div>
           </div>
           <div style={{ display: 'flex', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(255,107,53,0.15)' }}>
-            {[{ label:'20 Schemes', emoji:'📋' }, { label:'15 Crops', emoji:'🌾' }, { label:'22 Languages', emoji:'🗣️' }].map(s => (
+            {[
+              { label: isHindi ? '20 योजनाएं' : '20 Schemes', emoji:'📋' },
+              { label: isHindi ? '15 फसलें' : '15 Crops', emoji:'🌾' },
+              { label: isHindi ? '22 भाषाएं' : '22 Languages', emoji:'🗣️' },
+            ].map(s => (
               <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
                 <div style={{ fontSize: 18, marginBottom: 2 }}>{s.emoji}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600 }}>{s.label}</div>
@@ -127,6 +178,12 @@ export function HomePage({ onToast }) {
             ))}
           </div>
         </motion.div>
+
+        {/* ── Weather Widget ── */}
+        <WeatherWidget />
+
+        {/* ── News Ticker ── */}
+        <NewsTicker isHindi={isHindi} />
 
         {/* ── Mic Section ── */}
         <motion.div
@@ -164,8 +221,13 @@ export function HomePage({ onToast }) {
             )}
             {speechState === 'done' && showResult && (
               <motion.div key="result" initial={{ opacity:0, scale:0.9, y:10 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0 }} style={{ textAlign:'center' }}>
-                <div style={{ fontSize:13, color:'var(--accent-green)', fontWeight:600, marginBottom:8 }}>✅ Opening matching schemes...</div>
+                <div style={{ fontSize:13, color:'var(--accent-green)', fontWeight:600, marginBottom:8 }}>✅ {isHindi ? 'मिली योजनाएं खोली जा रही हैं...' : 'Opening matching schemes...'}</div>
                 <div style={{ fontSize:14, color:'var(--text-primary)', background:'var(--bg-elevated)', border:'1px solid rgba(0,212,106,0.2)', borderRadius:12, padding:'10px 16px' }}>"{transcript}"</div>
+              </motion.div>
+            )}
+            {speechState === 'error' && (
+              <motion.div key="error" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} style={{ textAlign:'center' }}>
+                <div style={{ fontSize:13, color:'var(--accent-red)', marginBottom:8 }}>⚠️ {isHindi ? 'माइक्रोफोन से कनेक्ट नहीं हो सका। डेमो मोड में चल रहा है।' : 'Could not access mic. Running demo mode.'}</div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -173,10 +235,12 @@ export function HomePage({ onToast }) {
 
         {/* ── Service Grid ── */}
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize:12, fontWeight:600, color:'var(--text-muted)', marginBottom:14, textTransform:'uppercase', letterSpacing:'0.1em' }}>Quick Access</div>
+          <div style={{ fontSize:12, fontWeight:600, color:'var(--text-muted)', marginBottom:14, textTransform:'uppercase', letterSpacing:'0.1em' }}>
+            {isHindi ? 'त्वरित पहुँच' : 'Quick Access'}
+          </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
             {services.map((s, i) => (
-              <ServiceCard key={s.title} emoji={s.emoji} title={s.title} subtitle={s.subtitle} gradient={s.gradient} onClick={() => handleServiceClick(s.path)} delay={i * 0.07} />
+              <ServiceCard key={s.path} emoji={s.emoji} title={s.title} subtitle={s.subtitle} gradient={s.gradient} onClick={() => handleServiceClick(s.path)} delay={i * 0.07} />
             ))}
           </div>
         </div>

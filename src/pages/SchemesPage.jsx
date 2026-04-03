@@ -1,8 +1,8 @@
 // ── Page: SchemesPage — /schemes ──
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Mic, Search, X, Filter, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Mic, Search, X, Filter, BookmarkCheck, Bookmark } from 'lucide-react';
 import { SchemeCard } from '../components/ui/SchemeCard';
 import { LoadingDots } from '../components/ui/LoadingDots';
 import { schemes } from '../data/schemes';
@@ -13,11 +13,11 @@ const CATEGORIES = ['all', 'farmer', 'health', 'women', 'employment'];
 const DEMO_QUERY = "PM Kisan ke liye apply karna hai";
 
 const CAT_META = {
-  all:        { emoji:'📋', label:'All' },
-  farmer:     { emoji:'🌾', label:'Farmer' },
-  health:     { emoji:'🏥', label:'Health'  },
-  women:      { emoji:'👩', label:'Women'  },
-  employment: { emoji:'💼', label:'Work'   },
+  all:        { emoji:'📋', label:'All', labelH:'सभी' },
+  farmer:     { emoji:'🌾', label:'Farmer', labelH:'किसान' },
+  health:     { emoji:'🏥', label:'Health', labelH:'स्वास्थ्य' },
+  women:      { emoji:'👩', label:'Women', labelH:'महिला' },
+  employment: { emoji:'💼', label:'Work', labelH:'रोजगार' },
 };
 
 function matchSchemes(query, category) {
@@ -46,14 +46,33 @@ export function SchemesPage({ onToast }) {
   const [displayedSchemes, setDisplayedSchemes] = useState(schemes);
   const [isLoading, setIsLoading] = useState(false);
   const [eligibleOnly, setEligibleOnly] = useState(false);
+  // NEW: saved/bookmarked schemes
+  const [savedIds, setSavedIds] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('gs_saved_schemes') || '[]'); }
+    catch { return []; }
+  });
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const inputRef = useRef(null);
   const isHindi = currentLang === 'hi';
+
+  const eligible = schemes.filter(s => s.eligible).length;
 
   useEffect(() => {
     let result = matchSchemes(query, category);
     if (eligibleOnly) result = result.filter(s => s.eligible);
+    // BUG FIX: saved filter also respects current category + search
+    if (showSavedOnly) result = result.filter(s => savedIds.includes(s.id));
     setDisplayedSchemes(result);
-  }, [query, category, eligibleOnly]);
+  }, [query, category, eligibleOnly, showSavedOnly, savedIds]);
+
+  // Persist saved IDs to localStorage
+  const toggleSave = useCallback((id) => {
+    setSavedIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      localStorage.setItem('gs_saved_schemes', JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
   const runVoiceDemo = () => {
     if (voicePhase !== 'idle') { setVoicePhase('idle'); setQuery(''); return; }
@@ -75,13 +94,14 @@ export function SchemesPage({ onToast }) {
     }, 40);
   };
 
+  // BUG FIX: clearSearch now respects current category
   const clearSearch = () => {
-    setQuery(''); setVoicePhase('idle');
-    setDisplayedSchemes(eligibleOnly ? schemes.filter(s=>s.eligible) : schemes);
+    setQuery('');
+    setVoicePhase('idle');
+    setShowSavedOnly(false);
+    setEligibleOnly(false);
     inputRef.current?.focus();
   };
-
-  const eligible = schemes.filter(s => s.eligible).length;
 
   return (
     <motion.div
@@ -120,9 +140,9 @@ export function SchemesPage({ onToast }) {
           style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:20 }}
         >
           {[
-            { label:'Total Schemes', value:schemes.length, emoji:'📋', color:'var(--accent-primary)' },
-            { label:'You\'re Eligible', value:eligible, emoji:'✅', color:'var(--accent-green)' },
-            { label:'Categories', value:CATEGORIES.length-1, emoji:'🏷️', color:'var(--accent-secondary)' },
+            { label: isHindi ? 'कुल योजनाएं' : 'Total Schemes', value:schemes.length, emoji:'📋', color:'var(--accent-primary)' },
+            { label: isHindi ? 'पात्र हैं' : 'You\'re Eligible', value:eligible, emoji:'✅', color:'var(--accent-green)' },
+            { label: isHindi ? 'सहेजी गई' : 'Saved', value:savedIds.length, emoji:'🔖', color:'var(--accent-secondary)' },
           ].map(s => (
             <div key={s.label} style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:12, padding:'12px', textAlign:'center' }}>
               <div style={{ fontSize:18, marginBottom:4 }}>{s.emoji}</div>
@@ -144,7 +164,7 @@ export function SchemesPage({ onToast }) {
               cursor:'pointer', whiteSpace:'nowrap', fontFamily:'Poppins,sans-serif',
               display:'flex', alignItems:'center', gap:5,
             }}>
-              {CAT_META[cat].emoji} {CAT_META[cat].label}
+              {CAT_META[cat].emoji} {isHindi ? CAT_META[cat].labelH : CAT_META[cat].label}
             </motion.button>
           ))}
         </div>
@@ -172,32 +192,41 @@ export function SchemesPage({ onToast }) {
           </motion.button>
         </motion.div>
 
-        {/* ── Eligible Only Toggle ── */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-          <div style={{ fontSize:12, color:'var(--text-muted)', display:'flex', alignItems:'center', gap:5 }}>
-            <Filter size={11} /> {displayedSchemes.length} scheme{displayedSchemes.length!==1?'s':''} found
+        {/* ── Filter Row ── */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16, gap:8 }}>
+          <div style={{ fontSize:12, color:'var(--text-muted)', display:'flex', alignItems:'center', gap:5, flexShrink:0 }}>
+            <Filter size={11} /> {displayedSchemes.length} {isHindi ? 'योजनाएं' : 'scheme' + (displayedSchemes.length!==1?'s':'')}
             {query && <span style={{ color:'var(--accent-primary)' }}>for "{query}"</span>}
           </div>
-          <motion.button
-            onClick={() => setEligibleOnly(p => !p)}
-            whileTap={{ scale:0.95 }}
-            style={{
+          <div style={{ display:'flex', gap:8 }}>
+            {/* BUG FIX: Saved toggle */}
+            <motion.button onClick={() => setShowSavedOnly(p => !p)} whileTap={{ scale:0.95 }} style={{
+              display:'flex', alignItems:'center', gap:5, padding:'5px 10px', borderRadius:100, cursor:'pointer', fontSize:12, fontWeight:600,
+              background: showSavedOnly ? 'rgba(255,215,0,0.15)' : 'var(--bg-elevated)',
+              border:`1px solid ${showSavedOnly ? 'rgba(255,215,0,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              color: showSavedOnly ? 'var(--accent-secondary)' : 'var(--text-secondary)',
+              transition:'all 0.2s ease',
+            }}>
+              {showSavedOnly ? <BookmarkCheck size={12} /> : <Bookmark size={12} />}
+              {isHindi ? 'सहेजी' : 'Saved'}
+            </motion.button>
+            <motion.button onClick={() => setEligibleOnly(p => !p)} whileTap={{ scale:0.95 }} style={{
               display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderRadius:100, cursor:'pointer', fontSize:12, fontWeight:600,
               background: eligibleOnly ? 'rgba(0,212,106,0.15)' : 'var(--bg-elevated)',
               border:`1px solid ${eligibleOnly ? 'rgba(0,212,106,0.35)' : 'rgba(255,255,255,0.08)'}`,
               color: eligibleOnly ? 'var(--accent-green)' : 'var(--text-secondary)',
               transition:'all 0.2s ease',
-            }}
-          >
-            ✅ Eligible only
-          </motion.button>
+            }}>
+              ✅ {isHindi ? 'पात्र' : 'Eligible'}
+            </motion.button>
+          </div>
         </div>
 
         {/* ── Loading ── */}
         <AnimatePresence>
           {isLoading && (
             <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:12, padding:'20px 0' }}>
-              <LoadingDots /><span style={{ fontSize:13, color:'var(--text-secondary)' }}>Searching schemes...</span>
+              <LoadingDots /><span style={{ fontSize:13, color:'var(--text-secondary)' }}>{isHindi ? 'योजनाएं खोज रहे हैं...' : 'Searching schemes...'}</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -205,15 +234,36 @@ export function SchemesPage({ onToast }) {
         {/* ── Scheme Cards ── */}
         <AnimatePresence mode="wait">
           {!isLoading && (
-            <motion.div key={`${category}-${eligibleOnly}-${voicePhase}`} initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} style={{ display:'flex', flexDirection:'column', gap:16 }}>
+            <motion.div key={`${category}-${eligibleOnly}-${showSavedOnly}-${voicePhase}`} initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} style={{ display:'flex', flexDirection:'column', gap:16 }}>
               {displayedSchemes.length > 0 ? (
-                displayedSchemes.map((scheme, i) => <SchemeCard key={scheme.id} scheme={scheme} index={i} onToast={onToast} />)
+                displayedSchemes.map((scheme, i) => (
+                  <SchemeCard
+                    key={scheme.id}
+                    scheme={scheme}
+                    index={i}
+                    onToast={onToast}
+                    isSaved={savedIds.includes(scheme.id)}
+                    onToggleSave={() => toggleSave(scheme.id)}
+                  />
+                ))
               ) : (
                 <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} style={{ textAlign:'center', padding:'40px 20px' }}>
-                  <div style={{ fontSize:40, marginBottom:12 }}>🔍</div>
-                  <div style={{ fontSize:15, fontWeight:600, color:'var(--text-secondary)', marginBottom:6 }}>No schemes found</div>
-                  <div style={{ fontSize:13, color:'var(--text-muted)', marginBottom:16 }}>Try different keywords or clear filters</div>
-                  <motion.button whileTap={{ scale:0.96 }} onClick={clearSearch} className="btn-primary">Show All Schemes</motion.button>
+                  <div style={{ fontSize:40, marginBottom:12 }}>
+                    {showSavedOnly ? '🔖' : '🔍'}
+                  </div>
+                  <div style={{ fontSize:15, fontWeight:600, color:'var(--text-secondary)', marginBottom:6 }}>
+                    {showSavedOnly
+                      ? (isHindi ? 'कोई सहेजी योजना नहीं' : 'No saved schemes yet')
+                      : (isHindi ? 'कोई योजना नहीं मिली' : 'No schemes found')}
+                  </div>
+                  <div style={{ fontSize:13, color:'var(--text-muted)', marginBottom:16 }}>
+                    {showSavedOnly
+                      ? (isHindi ? 'किसी योजना को बुकमार्क करें' : 'Tap 🔖 on any scheme to bookmark it')
+                      : (isHindi ? 'अलग कीवर्ड या फिल्टर आजमाएं' : 'Try different keywords or clear filters')}
+                  </div>
+                  <motion.button whileTap={{ scale:0.96 }} onClick={clearSearch} className="btn-primary">
+                    {isHindi ? 'सभी योजनाएं देखें' : 'Show All Schemes'}
+                  </motion.button>
                 </motion.div>
               )}
             </motion.div>

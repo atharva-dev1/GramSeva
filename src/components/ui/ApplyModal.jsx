@@ -1,11 +1,16 @@
 // ── Component: ApplyModal ──
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, User, Phone, MapPin, FileText, Send } from 'lucide-react';
 
 export function ApplyModal({ scheme, isOpen, onClose, onSuccess }) {
   const [step, setStep] = useState(1); // 1: form, 2: success
   const [form, setForm] = useState({ name: 'Ramesh Kumar', phone: '9876543210', village: 'Shivpur', district: 'Kanpur' });
+
+  // BUG FIX: reset step every time modal opens so it doesn't show success screen on re-open
+  useEffect(() => {
+    if (isOpen) setStep(1);
+  }, [isOpen]);
 
   if (!scheme) return null;
 

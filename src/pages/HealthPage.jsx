@@ -139,7 +139,7 @@ export function HealthPage({ onToast }) {
         </div>
       </div>
 
-      <div style={{ padding:'16px 20px 100px' }}>
+      <div style={{ padding:'16px 20px 200px' }}>
         <AnimatePresence mode="wait">
 
           {/* ── Symptom Checker Tab ── */}
