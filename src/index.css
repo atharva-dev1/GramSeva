@@ -1,0 +1,439 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
+/* ─────────────────────────────────────────────────────────────
+   GramSeva — Global CSS Design System
+   ───────────────────────────────────────────────────────────── */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Variables ── */
+:root {
+  --bg-primary: #080808;
+  --bg-card: #111111;
+  --bg-elevated: #1a1a1a;
+  --accent-primary: #ff6b35;
+  --accent-secondary: #ffd700;
+  --accent-green: #00d46a;
+  --accent-red: #ff4757;
+  --text-primary: #f5f5f5;
+  --text-secondary: #888888;
+  --text-muted: #444444;
+  --border: rgba(255, 255, 255, 0.06);
+  --glow: rgba(255, 107, 53, 0.15);
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', 'Noto Sans Devanagari', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
+/* ── App Container — centered 430px on desktop ── */
+.app-container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg-primary);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 80px rgba(0,0,0,0.8), -1px 0 0 var(--border), 1px 0 0 var(--border);
+}
+
+/* ── Scrollable Content Area ── */
+.screen-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 72px;
+  /* hide scrollbar but keep scroll */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.screen-content::-webkit-scrollbar { display: none; }
+
+/* ── Typography Scale ── */
+.text-12 { font-size: 12px; line-height: 1.4; }
+.text-13 { font-size: 13px; line-height: 1.5; }
+.text-15 { font-size: 15px; line-height: 1.6; }
+.text-18 { font-size: 18px; line-height: 1.4; }
+.text-24 { font-size: 24px; line-height: 1.2; }
+.text-32 { font-size: 32px; line-height: 1.1; }
+.text-48 { font-size: 48px; line-height: 1; }
+
+/* ── Hindi Text ── */
+.hindi {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.card-elevated {
+  background: var(--bg-elevated);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+}
+
+/* ── Glassmorphism Card ── */
+.glass-card {
+  background: rgba(255, 107, 53, 0.08);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  background: var(--accent-primary);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Poppins', sans-serif;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: #ff7a4a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(255,107,53,0.35);
+}
+
+.btn-primary:active {
+  transform: scale(0.96);
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Poppins', sans-serif;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background: rgba(255,107,53,0.08);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: scale(0.96);
+}
+
+/* ── Inputs ── */
+input, textarea, select {
+  background: var(--bg-elevated);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: rgba(255,107,53,0.5);
+  box-shadow: 0 0 0 3px rgba(255,107,53,0.15);
+}
+
+/* Override autofill ── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0px 1000px var(--bg-elevated) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ── Selection Color ── */
+::selection {
+  background: rgba(255,107,53,0.3);
+  color: white;
+}
+
+/* ── Focus Ring ── */
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.badge-orange {
+  background: rgba(255,107,53,0.15);
+  color: var(--accent-primary);
+  border: 1px solid rgba(255,107,53,0.25);
+}
+
+.badge-green {
+  background: rgba(0,212,106,0.12);
+  color: var(--accent-green);
+  border: 1px solid rgba(0,212,106,0.2);
+}
+
+.badge-red {
+  background: rgba(255,71,87,0.12);
+  color: var(--accent-red);
+  border: 1px solid rgba(255,71,87,0.2);
+}
+
+.badge-gray {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.badge-gold {
+  background: rgba(255,215,0,0.12);
+  color: var(--accent-secondary);
+  border: 1px solid rgba(255,215,0,0.2);
+}
+
+/* ── Gradient Text ── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Shimmer Loading ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Pulse Glow Animation ── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,107,53,0.2); }
+  50% { box-shadow: 0 0 40px rgba(255,107,53,0.4); }
+}
+
+.glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* ── Mic Ring Pulse ── */
+@keyframes micRing {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* ── Number bounce ── */
+@keyframes numBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* ── Stats scroll strip ── */
+.stats-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: none;
+}
+.stats-strip::-webkit-scrollbar { display: none; }
+
+/* ── Bottom Nav ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: rgba(8,8,8,0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Horizontal scroll chips ── */
+.chips-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.chips-row::-webkit-scrollbar { display: none; }
+
+/* ── Text transition on lang switch ── */
+.lang-text {
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+/* ── Custom dropdown styling ── */
+select option {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  width: 100%;
+}
+
+/* ── Live indicator animation ── */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  animation: livePulse 1.5s ease-in-out infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Waveform bars ── */
+@keyframes waveBar {
+  0%, 100% { height: 4px; }
+  50% { height: 20px; }
+}
+
+.wave-bar {
+  width: 3px;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  animation: waveBar 0.6s ease-in-out infinite;
+}
+
+/* ── Confetti dot ── */
+@keyframes confettiFloat {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+.confetti-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: confettiFloat 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ── Spin animation ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Skeleton blocks ── */
+.skeleton {
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
