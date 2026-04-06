@@ -7,7 +7,7 @@
 
 **Team:** NexAura
 **College:** PSIT, Kanpur
-**Hackathon:** HackStreet 4
+**Hackathon:** HackStreet 4.0
 **Theme:** Build for Bharat
 **Version:** 1.0.0 — MVP
 **Date:** April 2026
